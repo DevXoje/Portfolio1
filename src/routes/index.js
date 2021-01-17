@@ -25,6 +25,27 @@ router.post('/add-product', (req, res) => {
         if (err) { return next(err) } else { res.redirect('/add-product') };
     });
 });
+
+router.get('/products/:page', (req, res, next) => {
+    const perPage = 9;
+    const page = req.params.page || 1;
+
+    Product
+        .find({})
+        .skip((perPage * page) - perPage)
+        .limit(perPage)
+        .exec((err, products) => {
+            Product.countDocuments((err, count) => {
+                if (err) return next(err);
+                else res.render('products/products', {
+                    products,
+                    current: page,
+                    pages: Math.ceil(count / perPage)
+                });
+            })
+        })
+});
+
 router.get('/generate-fake-data', (req, res) => {
     for (let i = 0; i < 90; i++) {
         const product = new Product();
